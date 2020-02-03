@@ -13,3 +13,13 @@
 (defmacro print-and-do [& forms]
   (let [forms-with-println (mapcat insert-println-if-implemented forms)]
     (list* 'do forms-with-println)))
+
+(defn divisible-by? [dividend divisor] (= 0 (mod dividend divisor)))
+
+(defn is-sequence-present-once [subcoll supercoll]
+  (if (or
+        (empty? (filter (into #{} subcoll) supercoll))
+        (not= subcoll (filter (into #{} subcoll) supercoll)))
+    false
+    true
+    ))
