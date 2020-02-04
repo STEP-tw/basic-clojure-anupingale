@@ -1,4 +1,5 @@
-(ns assignments.conditions)
+(ns assignments.conditions
+  (:require [assignments.util :as u]))
 
 (defn safe-divide
   "Returns the result of x/y unless y is 0. Returns nil when y is 0"
@@ -19,7 +20,7 @@
   Falsy values(false and nil) return nil"
   {:level        :easy
    :use          '[when-let]
-   :implemented? false}
+   :implemented? true}
   [x] (when-let [x x] x))
 
 (defn yudishtira
@@ -27,7 +28,7 @@
   Falsy values(false and nil) return :ashwathama"
   {:level        :easy
    :use          '[if-let]
-   :implemented? false}
+   :implemented? true}
   [x] (if-let [x x] x :ashwathama))
 
 (defn duplicate-first
@@ -36,7 +37,7 @@
   {:level        :easy
    :use          '[when-first concat]
    :alternates   '[empty? seq? conj into]
-   :implemented? false}
+   :implemented? true}
   [coll] (when-first [x coll] (concat [x] coll)))
 
 (defn five-point-someone
@@ -63,27 +64,28 @@
   {:level        :medium
    :use          '[condp filter]
    :alternates   '[if cond]
-   :implemented? false}
-  [coll] (cond
-           (filter #{1 2} coll) :w
-           (filter #{:a :b :c}) :d
-           (filter #{[2 3] [4 5]}) :cl
-           :else :tutun)
-  )
+   :implemented? true}
+  [coll] (condp u/is-sequence-present-once coll
+           [1 3] :wonder-woman
+           [:a :b :c] :durga
+           [[2 3] [4 5]] :cleopatra
+           :tuntun
+           ))
+
 
 
 (defn repeat-and-truncate
   "Given coll and options to repeat and truncate
   returns a collection that optionally repeats itself
   and is optionally truncated to the first n elements.
-  (repeat-and-truncate (range 4) true true 6) => '(0 1 2 3 0 1)"
+  (repeat-and-truncate (range4) true true 6) => '(0 1 2 3 0 1)"
   {:level        :medium
    :use          '[cond->> concat take]
-   :implemented? false}
-  ;[coll rep? truncate? n] (cond->> coll
+   :implemented? true}
   [coll rep? truncate? n] (cond->> coll
-                                   rep? (concat (flatten (repeat coll)))
-                                   (and n truncate?) (take n)))
+                                   rep? (cycle)
+                                   truncate? (drop-last n)
+                                   n (take n)))
 
 (defn order-in-words
   "Given x, y and z, returns a vector consisting of
@@ -93,7 +95,7 @@
   (order-in-words 2 3 4) => [:z-greater-than-x]"
   {:level        :easy
    :use          '[cond-> conj]
-   :implemented? false}
+   :implemented? true}
   [x y z] (cond-> []
                   (> x y) (conj :x-greater-than-y)
                   (> y z) (conj :y-greater-than-z)
@@ -112,7 +114,7 @@
   \"\"  -> :empty-string"
   {:level        :easy
    :use          '[case]
-   :implemented? false}
+   :implemented? true}
   [zero-like-value] (case zero-like-value
                       0 :zero
                       [] :empty
@@ -129,5 +131,9 @@
   [1 2 3] -> (4 3 2 0 2 3 4)"
   {:level        :easy
    :use          '[as-> reverse]
-   :implemented? false}
-  [coll] (as-> coll list1 (map inc list1) (concat  (reverse list1) (list 0) list1 )))
+   :implemented? true}
+  [coll]
+  (as-> coll result
+        (if (every? (partial instance? Number) result) (map inc result) result)
+        (reverse result)
+        (concat result (list 0) (reverse result))))
