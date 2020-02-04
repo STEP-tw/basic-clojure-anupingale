@@ -6,14 +6,18 @@
   {:level        :easy
    :use          '[when-not zero?]
    :implemented? true}
-  [x y] (when-not (zero? y) (/ x y)))
+  [x y]
+  (when-not (zero? y) (/ x y)))
 
 (defn informative-divide
   "Returns the result of x/y unless y is 0. Returns :infinite when y is 0"
   {:level        :easy
    :use          '[if-not zero?]
    :implemented? true}
-  [x y] (if-not (zero? y) (/ x y) :infinite))
+  [x y]
+  (if-not (zero? y)
+    (/ x y)
+    :infinite))
 
 (defn harishchandra
   "Only returns truthy values as themselves.
@@ -71,8 +75,6 @@
            [[2 3] [4 5]] :cleopatra
            :tuntun
            ))
-
-
 
 (defn repeat-and-truncate
   "Given coll and options to repeat and truncate
