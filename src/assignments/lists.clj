@@ -22,8 +22,8 @@
   {:level        :easy
    :use          '[loop recur]
    :dont-use     '[filter]
-   :implemented? false}
-  [pred coll] (loop [coll coll new-list '()]
+   :implemented? true}
+  [pred coll] (loop [coll coll new-list []]
                 (if (zero? (count coll))
                   new-list
                   (recur (rest coll)
@@ -48,7 +48,7 @@
   {:level        :easy
    :use          '[loop recur]
    :dont-use     '[count]
-   :implemented? false}
+   :implemented? true}
   ([coll] (loop [coll coll ele-count 0]
             (if (empty? coll)
               ele-count
@@ -60,8 +60,9 @@
   {:level        :easy
    :use          '[reduce conj seqable? when]
    :dont-use     '[reverse]
-   :implemented? false}
-  ([coll] (reduce #(when (seqable? %) (conj % %2)) '() coll)))
+   :implemented? true}
+  ([coll] (when (seqable? coll)
+            (reduce conj '() coll))))
 
 (defn every?'
   "Implement your own version of every? that checks if every
@@ -69,7 +70,7 @@
   {:level        :easy
    :use          '[loop recur and]
    :dont-use     '[every?]
-   :implemented? false}
+   :implemented? true}
   [pred coll]
   (loop [collection coll result true]
     (if (or (empty? collection) (= result false))
@@ -87,26 +88,20 @@
   {:level        :easy
    :use          '[loop recur or]
    :dont-use     '[some]
-   :implemented? false}
-  ([pred coll]
-   (loop [collection coll result false]
-     (if (empty? collection)
-       nil
-       (if (= result true)
-         result
-         (recur (rest collection) (pred (first collection)))
-         ))
-     )
-   ))
+   :implemented? true}
+  ([pred collection]
+   (loop [coll collection bool false]
+     (if (or (true? bool) (empty? coll))
+       bool
+       (recur (rest coll) (pred (first coll)))))))
 
 (defn ascending?
   "Verify if every element is greater than or equal to its predecessor"
   {:level        :easy
    :use          '[partition every? partial apply <=]
    :dont-use     '[loop recur]
-   :implemented? false}
-  [coll] (apply <= coll)
-  )
+   :implemented? true}
+  [coll] (apply <= coll))
 
 (defn distinct'
   "Implement your own lazy sequence version of distinct which returns
@@ -152,14 +147,13 @@
 (def
   ^{:level        :easy
     :dont-use     '[loop recur for nth get]
-    :implemented? false}
+    :implemented? true}
   transpose
   "Transposes a given matrix.
   [[a b] [c d]] => [[a c] [b d]].
   Note this is a def. Not a defn.
   Return a vector of vectors, not list of vectors or vectors of lists"
-  (apply mapv vector [[:a :b] [:c :d]])
-  )
+  (partial apply mapv vector))
 
 (defn difference
   "Given two collections, returns only the elements that are present
@@ -167,8 +161,9 @@
   {:level        :easy
    :use          '[remove set]
    :dont-use     '[loop recur if]
-   :implemented? false}
-  [coll1 coll2] (filter (complement #((into (set coll1)) %)) coll2))
+   :implemented? true}
+  [coll1 coll2]
+  (remove (set coll1) coll2))
 
 (defn union
   "Given two collections, returns a new collection with elements from the second
@@ -177,21 +172,25 @@
   if elements repeat."
   {:level        :easy
    :use          '[remove into set ->>]
-   :implemented? false}
-  [coll1 coll2] (concat coll1 (filter (complement (into (set coll1))) coll2))
-  )
+   :implemented? true}
+  [coll1 coll2]
+  (->> coll2
+       (remove (set coll1))
+       (into coll1)))
 
 ;; points-around-origin is a def not a defn
 (def
   ^{:level        :easy
     :use          '[for]
     :dont-use     '[hardcoded-values map filter]
-    :implemented? false}
+    :implemented? true}
   points-around-origin
   "Calculate all the points around the origin
   [-1 -1] [0 -1] [1 -1] etc. There should be 8 points
   Note this is a def, not a defn"
-  (remove (fn [x] (= x [0 0])) (for [x (range -1 2) y (range -1 2)] [x y]))
+  #(for [x (range -1 2)
+         y (range -1 2) :when (not= x y 0)]
+     [x y])
   )
 
 (defn cross-product
@@ -201,7 +200,7 @@
   [[1 4] [1 3] [1 5] [2 4] [2 3] [2 5] [3 4]]"
   {:level        :easy
    :use          '[for]
-   :implemented? false}
+   :implemented? true}
   [seq1 seq2]
   (for [x seq1 y seq2 :while (not= x y)] [x y]))
 
@@ -210,19 +209,17 @@
   each element repeated twice"
   {:level        :easy
    :use          '[mapcat partial repeat :optionally vector]
-   :implemented? false}
-  [coll] (mapcat #(vector % %) coll)
-  )
+   :implemented? true}
+  [coll] (mapcat #(vector % %) coll))
 
 (defn third-or-fifth
   "Given a collection return a new collection that contains
   elements whose index is either divisible by three or five"
   {:level        :easy
    :use          '[keep-indexed when :optionally map-indexed filter]
-   :implemented? false}
+   :implemented? true}
   [coll]
-  (keep-indexed #(when (or (u/divisible-by? %1 3) (u/divisible-by? %1 5)) %2) [1 2 3 4 5 6 7])
-  )
+  (keep-indexed #(when (or (u/divisible-by? %1 3) (u/divisible-by? %1 5)) %2) coll))
 
 (defn sqr-of-the-first
   "Given a collection, return a new collection that contains the
@@ -231,7 +228,7 @@
   [4 5 6] => [16 16 16]"
   {:level        :easy
    :use          '[map constantly let]
-   :implemented? false}
+   :implemented? true}
   [coll] (map (constantly (* (first coll) (first coll))) coll))
 
 (defn russian-dolls
@@ -254,10 +251,7 @@
    :use          '[interleave split-at if rem concat take-last]
    :dont-use     '[loop recur map-indexed take drop]
    :implemented? false}
-  [coll]
-  ;(defn hello [x] (split-at (if (odd? (count x)) (dec (/ (count x) 2)) (/ (count x) 2)) x))
-  ;(concat (interleave (first (hello [1 2 3 4])) (second (hello [1 2 3 4]))) (take-last 1 [4 5]))
-  )
+  [coll])
 
 (defn muted-thirds
   "Given a sequence of numbers, make every third element
@@ -266,25 +260,20 @@
   {:level        :easy
    :use          '[map cycle]
    :dont-use     '[loop recur map-indexed take take-nth]
-   :implemented? false}
-  [coll]
-  (map * coll (cycle [1 1 0])))
+   :implemented? true}
+  [coll] (map * coll (cycle [1 1 0])))
 
 (defn palindrome?
   "Implement a recursive palindrome check of any given sequence"
   {:level        :easy
    :use          '[empty? loop recur butlast rest]
    :dont-use     '[reverse]
-   :implemented? false}
+   :implemented? true}
   [coll]
   (loop [preserved-coll coll coll coll reversed-coll []]
     (if (empty? coll)
       (if (= reversed-coll preserved-coll) true false)
-      (recur preserved-coll (butlast coll) (conj reversed-coll (last coll)))
-      )
-    )
-  )
-
+      (recur preserved-coll (butlast coll) (conj reversed-coll (last coll))))))
 
 (defn index-of
   "index-of takes a sequence and an element and finds the index
@@ -293,14 +282,13 @@
   {:level        :easy
    :use          '[loop recur rest]
    :dont-use     '[.indexOf memfn]
-   :implemented? false}
+   :implemented? true}
   [coll n] (loop [coll coll indexer 0]
              (if (empty? coll)
                -1
                (if (= n (first coll))
                  indexer
-                 (recur (rest coll) (inc indexer))
-                 ))))
+                 (recur (rest coll) (inc indexer))))))
 
 (defn validate-sudoku-grid
   "Given a 9 by 9 sudoku grid, validate it."
