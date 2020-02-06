@@ -2,6 +2,18 @@
   (:require [clojure.test :refer :all]
             [assignments.lists :refer :all]))
 
+(deftest map-test
+  (testing "identity with single coll"
+    (is (= [1 2 3] (map' identity [1 2 3]))))
+  (testing "with multiple coll"
+    (is (= [2 4 6] (map' + [1 2 3] [1 2 3])))))
+
+(deftest reduce-test
+  (testing "arity 2"
+    (is (= 15 (reduce' + [1 2 3 4 5]))))
+  (testing "arity 3"
+    (is (= 15 (reduce' + 1 [2 3 4 5])))))
+
 (deftest filter-test
   (testing "even? predicate"
     (is (= [2 4 6] (filter' even? [1 2 3 4 5 6 9])))))
@@ -91,3 +103,55 @@
 (deftest points-around-origin-test
   (testing "non-empty collection"
     (is (= [[-1 -1] [-1 0] [-1 1] [0 -1] [0 1] [1 -1] [1 0] [1 1]] (points-around-origin)))))
+
+(deftest split-comb-test
+  (testing "odd length collection"
+    (is (= '(1 3 2 4 5) (split-comb [1 2 3 4 5]))))
+  (testing "even length collection"
+    (is (= '(1 4 2 5 3 6) (split-comb [1 2 3 4 5 6])))))
+
+(deftest russian-dolls-test
+    (testing "non-empty collection"
+      (is (= [[[1]] [[2]] [[3]]] (russian-dolls [1 2 3] 3)))))
+
+(deftest max-three-digit-sequence-test
+  (testing "middle term max"
+    (is (= [2 -1 2] (max-three-digit-sequence [1 2 -1 2 0]))))
+  (testing "end term max"
+    (is (= [-1 2 3] (max-three-digit-sequence [1 2 -1 2 3])))))
+
+(deftest sum-of-adjacent-digits-test
+  (testing "non-empty collection"
+    (is (= [3 5 7] (sum-of-adjacent-digits [1 2 3 4])))))
+
+(deftest dedupe'-test
+  (testing "non-empty collection"
+    (is (= [1 2 3 1 3] (dedupe' [1 1 2 3 1 1 3 3])))))
+
+(deftest distinct-test
+  (testing "non-empty collection"
+    (is (= [1 2 4 5 3] (distinct' [1 2 1 2 4 5 3 5])))))
+
+(deftest validate-sudoku-grid-test
+  (testing "correct grid"
+    (is (true? (validate-sudoku-grid
+                 [[4 3 5 2 6 9 7 8 1]
+                  [6 8 2 5 7 1 4 9 3]
+                  [1 9 7 8 3 4 5 6 2]
+                  [8 2 6 1 9 5 3 4 7]
+                  [3 7 4 6 8 2 9 1 5]
+                  [9 5 1 7 4 3 6 2 8]
+                  [5 1 9 3 2 6 8 7 4]
+                  [2 4 8 9 5 7 1 3 6]
+                  [7 6 3 4 1 8 2 5 9]]))))
+  (testing "incorrect grid"
+    (is (false? (validate-sudoku-grid
+                  [[4 4 5 2 6 9 7 8 1]
+                   [6 8 2 5 7 1 4 9 3]
+                   [1 9 7 8 3 4 5 6 2]
+                   [8 2 6 1 9 5 3 4 7]
+                   [3 7 4 6 8 2 9 1 5]
+                   [9 5 1 7 4 3 6 2 8]
+                   [5 1 9 3 2 6 8 7 4]
+                   [2 4 8 9 5 7 1 3 6]
+                   [7 6 3 4 1 8 2 5 9]])))))

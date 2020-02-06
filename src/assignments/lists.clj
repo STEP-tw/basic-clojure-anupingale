@@ -8,12 +8,16 @@
   {:level        :medium
    :use          '[loop recur]
    :dont-use     '[map]
-   :implemented? false}
-  [f & colls] (loop [collection colls result []]
-                (if (= 0 (count collection))
-                  result
-                  (recur (rest collection) (conj result (f (first collection))))
-                  )))
+   :implemented? true}
+  [f & colls] (if (= 1 (count colls))
+                (loop [coll (first colls) result []]
+                  (if (empty? coll)
+                    result
+                    (recur (rest coll) (conj result (f (first coll))))))
+                (loop [collections colls result []]
+                  (if (some empty? collections)
+                    result
+                    (recur (map' rest collections) (conj result (apply f (map' first collections))))))))
 
 (defn filter'
   "Implement a non-lazy version of filter that accepts a
@@ -38,9 +42,12 @@
   {:level        :medium
    :use          '[loop recur]
    :dont-use     '[reduce]
-   :implemented? false}
-  ([f coll])
-  ([f init coll]))
+   :implemented? true}
+  ([f coll] (reduce' f (first coll) (rest coll)))
+  ([f init coll] (loop [coll coll result init]
+                   (if (empty? coll)
+                     result
+                     (recur (rest coll) (f result (first coll)))))))
 
 (defn count'
   "Implement your own version of count that counts the
@@ -75,10 +82,7 @@
   (loop [collection coll result true]
     (if (or (empty? collection) (= result false))
       result
-      (recur (rest collection) (pred (first collection)))
-      )
-    )
-  )
+      (recur (rest collection) (pred (first collection))))))
 
 (defn some?'
   "Implement your own version of some that checks if at least one
@@ -110,8 +114,8 @@
   {:level        :medium
    :use          '[lazy-seq set conj let :optionally letfn]
    :dont-use     '[loop recur distinct]
-   :implemented? false}
-  [coll])
+   :implemented? true}
+  [coll] (lazy-seq (reduce #(if-not ((set %1) %2) (conj %1 %2) %1) [] coll)))
 
 (defn dedupe'
   "Implement your own lazy sequence version of dedupe which returns
@@ -120,8 +124,13 @@
   {:level        :medium
    :use          '[lazy-seq conj let :optionally letfn]
    :dont-use     '[loop recur dedupe]
-   :implemented? false}
-  [coll])
+   :implemented? true}
+  [coll]
+  (lazy-seq (reduce #(if (not= (last %1) %2)
+                       (conj %1 %2)
+                       %1)
+                    []
+                    coll)))
 
 (defn sum-of-adjacent-digits
   "Given a collection, returns a map of the sum of adjacent digits.
@@ -129,8 +138,8 @@
   {:level        :medium
    :use          '[map + rest]
    :dont-use     '[loop recur partition]
-   :implemented? false}
-  [coll])
+   :implemented? true}
+  [coll] (map + coll (rest coll)))
 
 (defn max-three-digit-sequence
   "Given a collection of numbers, find a three digit sequence that
@@ -140,8 +149,10 @@
   {:level        :medium
    :use          '[map next nnext max-key partial apply + if ->>]
    :dont-use     '[loop recur partition]
-   :implemented? false}
-  [coll])
+   :implemented? true}
+  [coll] (if (> (count coll) 3)
+           ((last (sort-by :sum (map (fn [first second third] {:sum (+ first second third) :list [first second third]}) coll (next coll) (nnext coll)))) :list)
+           coll))
 
 ;; transpose is a def. Not a defn.
 (def
@@ -190,8 +201,7 @@
   Note this is a def, not a defn"
   #(for [x (range -1 2)
          y (range -1 2) :when (not= x y 0)]
-     [x y])
-  )
+     [x y]))
 
 (defn cross-product
   "Given two sequences, generate every combination in the sequence
@@ -238,8 +248,9 @@
   {:level        :medium
    :use          '[iterate mapv partial vector drop first ->>]
    :dont-use     '[for loop recur reduce]
-   :implemented? false}
-  [coll nesting-factor])
+   :implemented? true}
+  [coll nesting-factor]
+  (mapv #(last (take nesting-factor (iterate vector %1))) coll))
 
 (defn split-comb
   "Given a collection, return a new sequence where the first
@@ -250,8 +261,13 @@
   {:level        :easy
    :use          '[interleave split-at if rem concat take-last]
    :dont-use     '[loop recur map-indexed take drop]
-   :implemented? false}
-  [coll])
+   :implemented? true}
+  [coll]
+  (let [coll-length (count coll)
+        result (apply interleave (split-at (- (/ coll-length 2) (rem coll-length 2)) coll))]
+    (if (odd? coll-length)
+      (concat result (take-last 1 coll))
+      result)))
 
 (defn muted-thirds
   "Given a sequence of numbers, make every third element
@@ -290,8 +306,30 @@
                  indexer
                  (recur (rest coll) (inc indexer))))))
 
+(def trans (partial apply map vector))
+
+(defn is-duplicate-entry [coll]
+  (not= (count (set coll)) 9))
+
+(defn get-grid-format [coll]
+  (partition 9 (flatten coll)))
+
+(defn validate-sets [grid]
+  (zero? (count (filter is-duplicate-entry grid))))
+
+(defn get-small-sudokus [grid]
+  (partition 9 (flatten (trans (map (partial partition 3) grid)))))
+
+(defn validate-columns [grid]
+  (validate-sets (apply map vector grid)))
+
+(defn validate-small-sudokus [grid]
+  (validate-sets (get-small-sudokus grid)))
+
 (defn validate-sudoku-grid
   "Given a 9 by 9 sudoku grid, validate it."
   {:level        :hard
-   :implemented? false}
-  [grid])
+   :implemented? true}
+  [coll]
+  (let [grid (get-grid-format coll)]
+    (and (validate-sets grid) (validate-small-sudokus grid) (validate-columns grid))))
